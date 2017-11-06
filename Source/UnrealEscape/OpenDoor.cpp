@@ -14,7 +14,6 @@ UOpenDoor::UOpenDoor()
 
 AActor* UOpenDoor::AGetPlayer()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Trying to get pawn player"));
 	if (GetWorld() != nullptr && GetWorld()->GetFirstPlayerController() != nullptr)
 	{
 		auto Pawn = GetWorld()->GetFirstPlayerController()->GetPawn();
