@@ -41,15 +41,25 @@ void UOpenDoor::BeginPlay()
 	
 }
 
-void UOpenDoor::OpenDoor()
+void UOpenDoor::SetDoorAngle(float Angle) 
 {
 	AActor* Owner = GetOwner();
 	FRotator Rotation = Owner->GetActorRotation();
-	FRotator NewRotation = FRotator(0.0f, 130.0f, 0.0f);
+	FRotator NewRotation = FRotator(0.0f, Angle, 0.0f);
 	Owner->SetActorRotation(NewRotation);
+}
+
+void UOpenDoor::OpenDoor()
+{
+	SetDoorAngle(180.0f);
 
 }
 
+void UOpenDoor::CloseDoor()
+{
+	SetDoorAngle(90.0f);
+
+}
 
 // Called every frame
 void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -57,13 +67,20 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	AActor* Player = AGetPlayer();
 
+	float now = GetWorld()->GetTimeSeconds();
 	if (PressurePlate)
 	{
 		if (PressurePlate->IsOverlappingActor(ActorThatOpens))
 		{
 			OpenDoor();
+			DoorOpenedTime = now;
 		}
 	}
+	if (DoorOpenedTime && (now - DoorOpenedTime) > DoorCloseDelay)
+	{
+		CloseDoor();
+	}
+	
 	// ...
 }
 
