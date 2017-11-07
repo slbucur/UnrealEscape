@@ -15,37 +15,51 @@ UGrabber::UGrabber()
 	// ...
 }
 
-
 // Called when the game starts
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 	UE_LOG(LogTemp, Warning, TEXT("Grabber is here!"));
-	
+	InputCompoment = GetOwner()->FindComponentByClass<UInputComponent>();
+
+	BindPhysicsHandle();
+	BindInputComponent();
+}
+
+void UGrabber::BindPhysicsHandle()
+{
+	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+
+	if (PhysicsHandle)
+	{
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s Missing Physics component"), *(GetOwner()->GetName()));
+	}
+}
+
+void UGrabber::Grab()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Pressed"));
+	GetFirstPhysicsBodyInReach();
 }
 
 
-// Called every frame
-void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UGrabber::Release()
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	UE_LOG(LogTemp, Warning, TEXT("Released"));
+}
+
+const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
+{
 	FVector PlayerPosition;
 	FRotator PlayerRotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(PlayerPosition, PlayerRotation);
 	//UE_LOG(LogTemp, Warning, TEXT("Grabber: player view point postion %s, rotation %s"), *PlayerPostion.ToCompactString(), *PlayerRotation.ToCompactString());
 
-	FVector LineTraceEnd = PlayerPosition + (PlayerRotation.Vector() * 100.0f);
-	// ...
-	DrawDebugLine(
-		GetWorld(),
-		PlayerPosition,
-		LineTraceEnd,
-		FColor(255, 0, 0),
-		false,
-		0.0f,
-		0.0f,
-		10.0f
-	);
+	FVector LineTraceEnd = PlayerPosition + (PlayerRotation.Vector() * Reach);
 
 	FHitResult Hit;
 	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
@@ -63,5 +77,27 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"), *(ActorHit->GetName()));
 	}
+
+	return FHitResult();
+}
+
+void UGrabber::BindInputComponent()
+{
+	if (InputCompoment)
+	{
+		InputCompoment->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+		InputCompoment->BindAction("Grab", IE_Released, this, &UGrabber::Release);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s Missing Input Component"), *(GetOwner()->GetName()));
+	}
+}
+
+
+// Called every frame
+void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
